@@ -1,5 +1,5 @@
 # Use a base image with Java and Maven pre-installed
-FROM openjdk:17-oracle AS build
+FROM maven:3.8.4-openjdk-17 AS build
 
 # Set the working directory inside the container
 WORKDIR /app
