@@ -1,5 +1,6 @@
 package com.linkk.service;
 
+import com.linkk.data.dto.Response;
 import com.linkk.data.model.Invoice;
 import com.linkk.data.model.Link;
 import com.linkk.data.model.LinkType;
@@ -10,7 +11,10 @@ import com.linkk.service.contract.LinkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+
+import static com.linkk.util.Utils.successfulResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -19,12 +23,12 @@ public class LinkServiceImpl implements LinkService {
     private final LinkRepository linkRepository;
 
     @Override
-    public Link generateViewInvoiceLink(Long invoiceId) {
+    public Response<Link> generateViewInvoiceLink(Long invoiceId) {
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
 
         String token = generateUniqueToken();
-        LocalDateTime expirationDate = LocalDateTime.now().plusDays(7); // Link expires in 7 days
+        LocalDateTime expirationDate = LocalDateTime.now().plusDays(1); // Link expires in 1 days
 
         Link link = new Link();
         link.setToken(token);
@@ -32,21 +36,35 @@ public class LinkServiceImpl implements LinkService {
         link.setExpirationDate(expirationDate);
         link.setInvoice(invoice);
 
-        return linkRepository.save(link);
+        Link savedLink = linkRepository.save(link);
+        return successfulResponse(List.of(savedLink));
     }
 
     @Override
-    public Link generatePayInvoiceLink(Long invoiceId) {
-        return null;
+    public Response<Link> generatePayInvoiceLink(Long invoiceId) {
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
+
+        String token = generateUniqueToken();
+        LocalDateTime expirationDate = LocalDateTime.now().plusDays(1); // Link expires in 1 days
+
+        Link link = new Link();
+        link.setToken(token);
+        link.setType(LinkType.PAY_INVOICE);
+        link.setExpirationDate(expirationDate);
+        link.setInvoice(invoice);
+
+        Link savedLink = linkRepository.save(link);
+        return successfulResponse(List.of(savedLink));
     }
 
     @Override
-    public Invoice getInvoiceByToken(String token) {
+    public Response<Invoice> getInvoiceByToken(String token) {
         Link link = linkRepository.findByToken(token);
         if (link == null || link.getExpirationDate().isBefore(LocalDateTime.now())) {
             throw new ResourceNotFoundException("Invalid or expired link");
         }
-        return link.getInvoice();
+        return successfulResponse(List.of(link.getInvoice()));
     }
 
     private String generateUniqueToken() {

@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 public class Invoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Schema(description = "The unique identifier of the invoice")
     private Long id;
 
     @Column(nullable = false)
