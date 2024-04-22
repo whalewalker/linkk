@@ -26,4 +26,4 @@ COPY --from=build /app/target/linkk.jar .
 EXPOSE 8080
 
 # Define the command to run the application
-CMD ["java", "-jar", "my-application.jar"]
+CMD ["java", "-jar", "linkk.jar"]
