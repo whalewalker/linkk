@@ -2,6 +2,7 @@ package com.linkk.controller;
 
 import com.linkk.data.dto.Response;
 import com.linkk.data.model.Invoice;
+import com.linkk.data.dto.InvoiceDTO;
 import com.linkk.service.contract.InvoiceService;
 import com.linkk.service.contract.LinkService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,8 +46,8 @@ public class InvoiceController {
             @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content)
     })
     @PostMapping
-    public ResponseEntity<Response<Invoice>> createInvoice(@RequestBody Invoice invoice) {
-        Invoice createdInvoice = invoiceService.createInvoice(invoice);
+    public ResponseEntity<Response<Invoice>> createInvoice(@Valid @RequestBody InvoiceDTO invoiceDTO) {
+        Invoice createdInvoice = invoiceService.createInvoice(invoiceDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(successfulResponse(List.of(createdInvoice)));
     }
 }

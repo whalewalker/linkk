@@ -1,6 +1,7 @@
 package com.linkk.controller;
 
 
+import com.linkk.data.dto.InvoiceDTO;
 import com.linkk.data.dto.Response;
 import com.linkk.data.model.Invoice;
 import com.linkk.service.contract.InvoiceService;
@@ -72,7 +73,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         List<Invoice> invoiceList = List.of(createdInvoice);
         Response<Invoice> response = new Response<>("Invoice created successfully", null, invoiceList, invoiceList.size());
 
-        when(invoiceService.createInvoice(any(Invoice.class))).thenReturn(createdInvoice);
+        when(invoiceService.createInvoice(any(InvoiceDTO.class))).thenReturn(createdInvoice);
 
         mockMvc.perform(post("/invoices")
                         .contentType(MediaType.APPLICATION_JSON)

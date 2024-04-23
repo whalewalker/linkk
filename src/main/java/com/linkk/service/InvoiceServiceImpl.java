@@ -1,5 +1,6 @@
 package com.linkk.service;
 
+import com.linkk.data.dto.InvoiceDTO;
 import com.linkk.data.model.Invoice;
 import com.linkk.exception.ResourceNotFoundException;
 import com.linkk.repo.InvoiceRepository;
@@ -15,7 +16,11 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public Invoice createInvoice(Invoice invoice) {
+    public Invoice createInvoice(InvoiceDTO invoiceDTO) {
+        Invoice invoice = new Invoice();
+        invoice.setInvoiceNumber(invoiceDTO.getInvoiceNumber());
+        invoice.setAmount(invoiceDTO.getAmount());
+        invoice.setDueDate(invoiceDTO.getDueDate());
         return invoiceRepository.save(invoice);
     }
 

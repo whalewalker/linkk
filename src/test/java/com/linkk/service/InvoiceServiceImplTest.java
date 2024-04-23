@@ -1,5 +1,6 @@
 package com.linkk.service;
 
+import com.linkk.data.dto.InvoiceDTO;
 import com.linkk.data.model.Invoice;
 import com.linkk.exception.ResourceNotFoundException;
 import com.linkk.repo.InvoiceRepository;
@@ -14,6 +15,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,7 +39,7 @@ import static org.mockito.Mockito.when;
     @Test
     void testCreateInvoice() {
         when(invoiceRepository.save(invoice)).thenReturn(invoice);
-        Invoice createdInvoice = invoiceService.createInvoice(invoice);
+        Invoice createdInvoice = invoiceService.createInvoice(any(InvoiceDTO.class));
         assertEquals(invoice, createdInvoice);
     }
 
