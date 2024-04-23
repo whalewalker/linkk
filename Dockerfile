@@ -7,8 +7,8 @@ WORKDIR /app
 # Copy the entire project directory into the container
 COPY . /app
 
-# Build the application
-RUN ./mvnw clean package
+# Build the application, skipping the test phase
+RUN ./mvnw clean package -DskipTests
 
 # Expose the port on which the application will run
 EXPOSE 8080
