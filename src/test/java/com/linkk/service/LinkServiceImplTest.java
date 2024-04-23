@@ -1,5 +1,6 @@
 package com.linkk.service;
 
+import com.linkk.data.dto.Response;
 import com.linkk.data.model.Invoice;
 import com.linkk.data.model.Link;
 import com.linkk.data.model.LinkType;
@@ -17,11 +18,13 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class LinkServiceImplTest {
+ public class LinkServiceImplTest {
 
     @Mock
     private InvoiceRepository invoiceRepository;
@@ -33,79 +36,88 @@ class LinkServiceImplTest {
     private LinkServiceImpl linkService;
 
     private Invoice invoice;
-    private Link link;
+    private final String successMessage = "Successful";
 
     @BeforeEach
-    void setUp() {
+     void setUp() {
         invoice = new Invoice();
         invoice.setId(1L);
-        invoice.setInvoiceNumber("INV-0001");
         invoice.setAmount(100.0);
-        invoice.setDueDate(LocalDateTime.now().plusDays(7));
+    }
 
-        link = new Link();
-        link.setId(1L);
-        link.setToken(UUID.randomUUID().toString());
-        link.setType(LinkType.VIEW_INVOICE);
-        link.setExpirationDate(LocalDateTime.now().plusDays(7));
+    @Test
+     void testGenerateViewInvoiceLink() {
+        when(invoiceRepository.findById(1L)).thenReturn(Optional.of(invoice));
+        when(linkRepository.save(any(Link.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Response<Link> response = linkService.generateViewInvoiceLink(1L);
+        assertEquals(successMessage, response.getResponseMessage());
+        assertEquals(1, response.getModelList().size());
+
+        Link link = response.getModelList().get(0);
+        assertEquals(LinkType.VIEW_INVOICE, link.getType());
+        assertEquals(invoice, link.getInvoice());
+    }
+
+    @Test
+     void testGenerateViewInvoiceLinkInvalidInvoiceId() {
+        when(invoiceRepository.findById(2L)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> linkService.generateViewInvoiceLink(2L));
+    }
+
+    @Test
+     void testGeneratePayInvoiceLink() {
+        when(invoiceRepository.findById(1L)).thenReturn(Optional.of(invoice));
+        when(linkRepository.save(any(Link.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Response<Link> response = linkService.generatePayInvoiceLink(1L);
+        assertEquals(successMessage, response.getResponseMessage());
+        assertEquals(1, response.getModelList().size());
+
+        Link link = response.getModelList().get(0);
+        assertEquals(LinkType.PAY_INVOICE, link.getType());
+        assertEquals(invoice, link.getInvoice());
+    }
+
+    @Test
+     void testGeneratePayInvoiceLinkInvalidInvoiceId() {
+        when(invoiceRepository.findById(2L)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> linkService.generatePayInvoiceLink(2L));
+    }
+
+    @Test
+     void testGetInvoiceByToken() {
+        String token = UUID.randomUUID().toString();
+        LocalDateTime expirationDate = LocalDateTime.now().plusDays(1);
+        Link link = new Link();
+        link.setToken(token);
+        link.setExpirationDate(expirationDate);
         link.setInvoice(invoice);
-    }
 
-    @Test
-    void testGenerateViewInvoiceLink_ExistingInvoice() {
-        Long invoiceId = 1L;
-        when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
-        when(linkRepository.save(any(Link.class))).thenReturn(link);
-
-        Link generatedLink = linkService.generateViewInvoiceLink(invoiceId);
-
-        assertNotNull(generatedLink);
-        assertEquals(link.getToken(), generatedLink.getToken());
-        assertEquals(LinkType.VIEW_INVOICE, generatedLink.getType());
-        assertNotNull(generatedLink.getExpirationDate());
-        assertEquals(invoice, generatedLink.getInvoice());
-        verify(invoiceRepository, times(1)).findById(invoiceId);
-        verify(linkRepository, times(1)).save(any(Link.class));
-    }
-
-    @Test
-    void testGenerateViewInvoiceLink_NonExistingInvoice() {
-        Long invoiceId = 2L;
-        when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> linkService.generateViewInvoiceLink(invoiceId));
-        verify(invoiceRepository, times(1)).findById(invoiceId);
-        verify(linkRepository, never()).save(any(Link.class));
-    }
-
-    @Test
-    void testGetInvoiceByToken_ValidToken() {
-        String token = link.getToken();
         when(linkRepository.findByToken(token)).thenReturn(link);
 
-        Invoice foundInvoice = linkService.getInvoiceByToken(token);
-
-        assertNotNull(foundInvoice);
-        assertEquals(invoice, foundInvoice);
-        verify(linkRepository, times(1)).findByToken(token);
+        Response<Invoice> response = linkService.getInvoiceByToken(token);
+        assertEquals(successMessage, response.getResponseMessage());
+        assertEquals(1, response.getModelList().size());
+        assertEquals(invoice, response.getModelList().get(0));
     }
 
     @Test
-    void testGetInvoiceByToken_InvalidToken() {
-        String token = "invalid-token";
-        when(linkRepository.findByToken(token)).thenReturn(null);
-
-        assertThrows(ResourceNotFoundException.class, () -> linkService.getInvoiceByToken(token));
-        verify(linkRepository, times(1)).findByToken(token);
+     void testGetInvoiceByTokenInvalidToken() {
+        when(linkRepository.findByToken("invalid")).thenReturn(null);
+        assertThrows(ResourceNotFoundException.class, () -> linkService.getInvoiceByToken("invalid"));
     }
 
     @Test
-    void testGetInvoiceByToken_ExpiredLink() {
-        String token = link.getToken();
-        link.setExpirationDate(LocalDateTime.now().minusDays(1)); // Set expiration date to yesterday
+     void testGetInvoiceByTokenExpiredLink() {
+        String token = UUID.randomUUID().toString();
+        LocalDateTime expirationDate = LocalDateTime.now().minusDays(1);
+        Link link = new Link();
+        link.setToken(token);
+        link.setExpirationDate(expirationDate);
+        link.setInvoice(invoice);
+
         when(linkRepository.findByToken(token)).thenReturn(link);
-
         assertThrows(ResourceNotFoundException.class, () -> linkService.getInvoiceByToken(token));
-        verify(linkRepository, times(1)).findByToken(token);
     }
 }

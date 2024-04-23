@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . /app
 
 # Build the application, skipping the test phase
-RUN ./mvnw clean package -DskipTests
+#RUN ./mvnw clean package -DskipTests
 
 # Expose the port on which the application will run
 EXPOSE 8080

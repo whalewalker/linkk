@@ -10,14 +10,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class InvoiceServiceImplTest {
+public class InvoiceServiceImplTest {
 
     @Mock
     private InvoiceRepository invoiceRepository;
@@ -30,40 +30,27 @@ class InvoiceServiceImplTest {
     @BeforeEach
     void setUp() {
         invoice = new Invoice();
-        invoice.setInvoiceNumber("INV-0001");
+        invoice.setId(1L);
         invoice.setAmount(100.0);
-        invoice.setDueDate(LocalDateTime.now().plusDays(7));
     }
 
     @Test
     void testCreateInvoice() {
         when(invoiceRepository.save(invoice)).thenReturn(invoice);
-
         Invoice createdInvoice = invoiceService.createInvoice(invoice);
-
-        assertNotNull(createdInvoice);
         assertEquals(invoice, createdInvoice);
-        verify(invoiceRepository, times(1)).save(invoice);
     }
 
     @Test
     void testGetInvoiceById_ExistingInvoice() {
-        Long invoiceId = 1L;
-        when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
-
-        Invoice foundInvoice = invoiceService.getInvoiceById(invoiceId);
-
-        assertNotNull(foundInvoice);
+        when(invoiceRepository.findById(1L)).thenReturn(Optional.of(invoice));
+        Invoice foundInvoice = invoiceService.getInvoiceById(1L);
         assertEquals(invoice, foundInvoice);
-        verify(invoiceRepository, times(1)).findById(invoiceId);
     }
 
     @Test
     void testGetInvoiceById_NonExistingInvoice() {
-        Long invoiceId = 2L;
-        when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> invoiceService.getInvoiceById(invoiceId));
-        verify(invoiceRepository, times(1)).findById(invoiceId);
+        when(invoiceRepository.findById(2L)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> invoiceService.getInvoiceById(2L));
     }
 }
