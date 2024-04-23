@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
- public class LinkServiceImplTest {
+  class LinkServiceImplTest {
 
     @Mock
     private InvoiceRepository invoiceRepository;

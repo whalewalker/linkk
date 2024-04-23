@@ -2,13 +2,17 @@ package com.linkk.data.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Schema(description = "Generic response data transfer object")
+@AllArgsConstructor
+@NoArgsConstructor
 public class Response<T> {
     @Schema(description = "The response message")
     private String responseMessage;
