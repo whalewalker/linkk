@@ -1,29 +1,17 @@
-# Use a base image with Java and Maven pre-installed
-FROM maven:3.8.4-openjdk-17 AS build
+# Use the official OpenJDK 17 image as the base image
+FROM openjdk:17
 
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the Maven configuration files
-COPY pom.xml .
-
-# Copy the source code
-COPY src ./src
+# Copy the entire project directory into the container
+COPY . /app
 
 # Build the application
-RUN mvn clean package -DskipTests
+RUN ./mvnw clean package
 
-# Use a lightweight base image with Java pre-installed
-FROM openjdk:17-jre-slim
-
-# Set the working directory inside the container
-WORKDIR /app
-
-# Copy the built JAR file from the previous stage
-COPY --from=build /app/target/linkk.jar .
-
-# Expose the port that the Spring Boot application runs on
+# Expose the port on which the application will run
 EXPOSE 8080
 
-# Define the command to run the application
-CMD ["java", "-jar", "linkk.jar"]
+# Set the entry point for the container
+ENTRYPOINT ["java", "-jar", "target/linkk-0.0.1-SNAPSHOT.jar"]
